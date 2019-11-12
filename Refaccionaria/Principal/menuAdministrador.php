@@ -30,7 +30,7 @@
 		</div>
  		<nav>
 			<ul>
-				<li class="<?php echo $pagina=='404.php'? 'active': ''; ?>"><a href="?p=404">
+				<li class="<?php echo $pagina=='menuAdministrador'? 'active': ''; ?>"><a href="?p=menuAdministrador">
 				<i class="fa fa-home"></i><span></span>Inicio</a></li>
 				<li class="<?php echo $pagina=='contenedorProductos'? 'active': ''; ?>"><a href="?p=contenedorProductos">
 				<i class="fa fa-product-hunt"></i><span></span>Productos</a></li>
