@@ -1,10 +1,13 @@
 * {
 	margin:0;
 	padding:0;
+	
 }
 
 body {
 	background:#FFFFFA;
+	background: url("../imagenes/fondocarro.jpg") no-repeat center center fixed;
+	background-size:cover;
 }
 
 header {
@@ -15,7 +18,8 @@ header nav {
 	width:100%;
 	max-width:10000px;
 	margin:0px ;
-	background:#024959;
+	background:#3c8dbc;
+	/*024959*/
 }
 
 .menu_bar {
@@ -33,7 +37,7 @@ header nav ul li {
 
 header nav ul li a {
 	color:#fff;
-	padding:13px;
+	padding:18px;
 	display:block;
 	text-decoration:none;
 }
