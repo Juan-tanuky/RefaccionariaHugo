@@ -8,24 +8,26 @@ include("conexion.php");
       Administrar usuarios
     </h1>
     <ol class="breadcrumb">
-      
       <li><a><i class="fa fa-dashboard"></i> Inicio</a></li>
-      
-      <li class="active">Administrar usuarios</li>
-    
+      <li class="active">Administrar usuarios</li>    
     </ol>
   </section>
+  <!--Entrada para crear el boton-->
   <section class="content">
     <div class="box">
       <div class="box-header with-border">
         <button class="btn btn-primary" data-toggle="modal" data-target="#modalAgregarUsuario">
           Agregar usuario
         </button>
-	 
-
       </div>
-	  
       <br>
+      <!--Entrada para el filtro-->
+      <div class="col-xs-3">
+      <label for="usrname"><span class="glyphicon "></span>Buscar usuario</label> 
+      <input class="input-sm" id="myInput" type="text" placeholder="  ">
+      </div>
+      <br><br>
+      <!--Entrada para crear la tabla-->
       <div class="box-body">
        <table class="table table-bordered table-striped dt-responsive tablas" width="100%">
         <thead>
@@ -33,14 +35,13 @@ include("conexion.php");
            <th style="width:10px">#</th>
         <th>Nombre completo</th>
         <th>Código de cliente</th>
-        <th>Número Telefonico</th>
-        <th>Correo</th>
-        <th>Direccion</th>
-       
-        <th></th>
+        <th style="width:130px">Número Telefonico</th>
+        <th style="width:130px">Correo</th>
+        <th>Direccion</th>      
+        <th style="width:110px"></th>
          </tr> 
         </thead>
-        <tbody>
+        <tbody id="myTable">
         <?php
         $item = null;
         $valor = null;
@@ -78,7 +79,7 @@ MODAL AGREGAR USUARIO
 <div id="modalAgregarUsuario" class="modal fade" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form role="form" method="post" enctype="multipart/form-data">
+      <form role="form" method="POST" enctype="multipart/form-data">
         <!--=====================================
         CABEZA DEL MODAL
         ======================================-->
@@ -98,18 +99,11 @@ MODAL AGREGAR USUARIO
                 <input type="text" class="form-control form-control-sm" name="nuevoNombre" placeholder="Ingresar nombre completo" required>
               </div>
             </div>
-			<!-- ENTRADA PARA EL USUARIO -->
-            <div class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-user"></i></span> 
-                <input type="text" class="form-control form-control-sm" name="nuevoUsuario" placeholder="Ingresar un usuario" required>
-              </div>
-            </div>
-            <!-- ENTRADA PARA EL CORREO -->
+            <!-- ENTRADA PARA EL CODIGO DEL CLIENTE -->
              <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-key"></i></span> 
-                <input type="text" class="form-control form-control-sm" name="nuevoCorreo" placeholder="Ingresa correo" id="nuevocorreo" required>
+                <input type="text" class="form-control form-control-sm" name="nuevoCodigo" placeholder="Ingresa codigo" id="nuevocodigo" required>
               </div>
             </div>
 
@@ -120,35 +114,49 @@ MODAL AGREGAR USUARIO
                 <input type="text" class="form-control form-control-sm" name="nuevoTelefono" placeholder="Ingresa telefono" id="nuevotelefono" required>
               </div>
             </div>
+            <!-- ENTRADA PARA EL CORREO -->
+            <div class="form-group">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="fa fa-lock"></i></span> 
+                <input type="email" class="form-control form-control-sm" name="nuevoCorreo" placeholder="Ingresar correo" required>
+              </div>
+            </div>
             <!-- ENTRADA PARA EL DIRECCION -->
             <div class="form-group">
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-key"></i></span> 
                 <input type="text" class="form-control form-control-sm" name="nuevaDireccion" placeholder="Ingresa direccion" id="nuevadireccion" required>
               </div>
-            </div>
-            <!-- ENTRADA PARA LA CONTRASEÑA -->
-             <div class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-lock"></i></span> 
-                <input type="password" class="form-control form-control-sm" name="nuevoPassword" placeholder="Ingresar contraseña" required>
-              </div>
-            </div>
-           
+            </div>       
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Salir</button>
-          <button type="submit" class="btn btn-primary">Guardar usuario</button>
+          <button type="submit" class="btn btn-primary" name="guardar">Guardar usuario</button>
         </div>
         </form>
-
 </div>
-
 </div>
-
 </div>
+<!--Entrada de codigo para insertar los usuarios-->
+<?php
+if(isset($_POST['guardar'])){
+$nombre=$_POST['nuevoNombre'];
+$codigoCliente=$_POST['nuevoCodigo'];
+$telefono=$_POST['nuevoTelefono'];
+$correo=$_POST['nuevoCorreo'];
+$direccion=$_POST['nuevaDireccion'];
+$insertar="INSERT INTO cliente (nombre,codigo_cliente,numero_telefono,correo,direccion) 
+VALUES('$nombre','$codigoCliente','$telefono','$correo','$direccion')";
+$ejecutar=mysqli_query($conexion,$insertar);
+if($ejecutar){
+echo '<p class="alert alert-success agileits" role="alert">Captura realizada correctamente!</p>';
+}else{
 
+  echo '<h3>Error al insertar</h3>';
+}
+}
+?>
 
 <!--=====================================
 MODAL EDITAR USUARIO
@@ -233,7 +241,14 @@ MODAL EDITAR USUARIO
 </div>
 </div>
 </div>
-
-
-
-
+<!--Entrada de codigo para hacer funcionar el filtro-->
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>

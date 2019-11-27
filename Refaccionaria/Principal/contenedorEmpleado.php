@@ -19,6 +19,12 @@ include("conexion.php");
         </button>
       </div>
       <br>
+      <!--Entrada para el filtro-->
+      <div class="col-xs-3">
+      <label for="usrname"><span class="glyphicon "></span>Buscar empleado</label> 
+      <input class="input-sm" id="myInput" type="text" placeholder="  ">
+      </div>
+      <br><br>
       <div class="box-body">
        <table class="table table-bordered table-striped dt-responsive tablas" width="100%">
         <thead>
@@ -37,11 +43,13 @@ include("conexion.php");
         <th></th>
          </tr> 
         </thead>
-        <tbody>
+        <tbody id="myTable">
         <?php
         $item = null;
         $valor = null;
         $consulta="SELECT * FROM empleado";
+        $sql = "SELECT COUNT(*) id_empleado FROM empleado";
+        $total=mysqli_query($conexion,$sql);
        $usuarios=mysqli_query($conexion,$consulta);
        foreach ($usuarios as $key => $value){
                    echo ' <tr>
@@ -51,7 +59,12 @@ include("conexion.php");
                   <td>'.$value["correo"].'</td>';
                   echo '<td>'.$value["numero_telefono"].'</td>';
                   echo '<td>'.$value["direccion"].'</td>';
-                  echo '<td>'.$value["rol"].'</td>';
+                  if($value["rol"]==1){
+                  echo '<td><button class="btn btn-info btn-xs">Administrador</button></td>';
+                }else{
+                  echo '<td><button class="btn btn-info btn-xs">Vendedor</button></td>';
+                }
+                
                   echo '<td>'.$value["fecha_alta"].'</td>';
                   echo '<td>'.$value["fecha_login"].'</td>';
                   if($value["status"] != 0){
@@ -59,7 +72,6 @@ include("conexion.php");
                   }else{
                     echo '<td><button class="btn btn-danger btn-xs btnActivar" idUsuario="'.$value["id_empleado"].'" estadoUsuario="1">Desactivado</button></td>';
                   }       
-                        
                   echo '<td>'.$value["password"].'</td>';
                   echo '
                   <td>
@@ -76,6 +88,18 @@ include("conexion.php");
        </table>
       </div>
     </div>
+    <blockquote class="blockquote-reverse">
+    <p class="text-right small">
+    <strong>
+    <?php
+    echo 'Número de total de empleados: '; 
+    ?>
+    </strong>
+    <?php 
+    echo $value['id_empleado'];
+    ?>
+    </p>
+    </blockquote>
   </section>
 </div>
 
@@ -85,7 +109,7 @@ MODAL AGREGAR USUARIO
 <div id="modalAgregarUsuario" class="modal fade" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form role="form" method="post" enctype="multipart/form-data">
+      <form role="form" method="POST" enctype="multipart/form-data">
         <!--=====================================
         CABEZA DEL MODAL
         ======================================-->
@@ -103,6 +127,13 @@ MODAL AGREGAR USUARIO
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-user"></i></span> 
                 <input type="text" class="form-control form-control-sm" name="nuevoNombre" placeholder="Ingresar nombre completo" required>
+              </div>
+            </div>
+             <!-- ENTRADA PARA EL USUARIO -->
+             <div class="form-group">
+              <div class="input-group">
+                <span class="input-group-addon"><i class="fa fa-user"></i></span> 
+                <input type="text" class="form-control form-control-sm" name="nuevoUsuario" placeholder="Ingresar usuario" required>
               </div>
             </div>
             <!-- ENTRADA PARA EL CORREO -->
@@ -127,6 +158,17 @@ MODAL AGREGAR USUARIO
                 <input type="text" class="form-control form-control-sm" name="nuevaDireccion" placeholder="Ingresa direccion" id="nuevadireccion" required>
               </div>
             </div>
+            <!--Estatus-->
+            <div class="form-group">
+               <div class="input-group">
+               <span class="input-group-addon"><i class="fa fa-users"></i></span> 
+                <select class="form-control form-control-sm" name="nuevoEstatus">
+                  <option value="">Selecionar estatus</option>
+                  <option value="1">Activo</option>                  
+                  <option value="0">Inactivo</option>
+                </select> 
+              </div>
+               </div>
             <!-- ENTRADA PARA LA CONTRASEÑA -->
              <div class="form-group">
               <div class="input-group">
@@ -140,8 +182,8 @@ MODAL AGREGAR USUARIO
                 <span class="input-group-addon"><i class="fa fa-users"></i></span> 
                 <select class="form-control form-control-sm" name="nuevoPerfil">
                   <option value="">Selecionar perfil o rol</option>
-                  <option value="Administrador">Administrador</option>                  
-                  <option value="Vendedor">Vendedor</option>
+                  <option value="1">Administrador</option>                  
+                  <option value="0">Vendedor</option>
                 </select>
               </div>
             </div>
@@ -149,16 +191,33 @@ MODAL AGREGAR USUARIO
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Salir</button>
-          <button type="submit" class="btn btn-primary">Guardar usuario</button>
+          <button type="submit" class="btn btn-primary" name="guardar">Guardar usuario</button>
         </div>
         </form>
-
 </div>
-
 </div>
-
 </div>
+<?php
+if(isset($_POST['guardar'])){
+$nombre=$_POST['nuevoNombre'];
+$user=$_POST['nuevoUsuario'];
+$correo=$_POST['nuevoCorreo'];
+$telefono=$_POST['nuevoTelefono'];
+$direccion=$_POST['nuevaDireccion'];
+$perfil=$_POST['nuevoPerfil'];
+$estatus=$_POST['nuevoEstatus'];
+$contra=$_POST['nuevoPassword'];
+$insertar="INSERT INTO empleado (nombre,usuario,correo,numero_telefono,direccion,rol,fecha_alta,fecha_login,status,password) 
+VALUES('$nombre','$user','$correo','$telefono','$direccion',$perfil,NULL,NULL,$estatus,'$contra')";
+$ejecutar=mysqli_query($conexion,$insertar);
+if($ejecutar){
+  echo '<p class="alert alert-success agileits" role="alert">Captura realizada correctamente!</p>';
+}else{
+  echo "<script>alert('Error al guardar')</script>";
+}
 
+}
+?>
 
 <!--=====================================
 MODAL EDITAR USUARIO
@@ -259,5 +318,14 @@ MODAL EDITAR USUARIO
 </div>
 </div>
 
-
-
+<!--Entrada de codigo para hacer funcionar el filtro-->
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>

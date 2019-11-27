@@ -19,6 +19,17 @@ include("conexion.php");
         </button>
       </div>
       <br>
+      <!--Entrada para el filtro
+       echo 'Número de total de registros: '.$fila['existencia_producto'];-->
+       
+      <div class="col-xs-3">
+     
+      <label for="usrname"><span class="glyphicon "></span>Buscar producto</label> 
+      <input class="input-sm" id="myInput" type="text" placeholder="  ">
+     
+      </div>
+      
+      <br><br>
       <div class="box-body">
        <table class="table table-bordered table-striped dt-responsive tablas" width="100%">
         <thead>
@@ -33,27 +44,83 @@ include("conexion.php");
         <th>Estatus</th>
         <th>Fecha alta</th>
         <th>Descripcion</th>
-        <th>Numero de ventas</th>
-        <th></th>
+        <th>No. de ventas</th>
+        <th style="width:110px"></th>
          </tr> 
         </thead>
-        <tbody>
+        <tbody id="myTable">
         <?php
         $item = null;
         $valor = null;
-        $consulta="SELECT * FROM producto";
+        $consulta="SELECT * FROM producto ORDER BY id_producto DESC";
        $productos=mysqli_query($conexion,$consulta);
-       foreach ($productos as $key => $value){
+       $sql = "SELECT COUNT(*) existencia_producto FROM producto";
+       $result = mysqli_query($conexion,$sql);
+       $fila = mysqli_fetch_assoc($result);
+      foreach ($productos as $key => $value){
+        for($i = 0; $i < count($fila); $i++){ 
                    echo ' <tr>
                   <td>'.($key+1).'</td>
                   <td>'.$value["codigo_barras"].'</td>
                   <td>'.$value["nombre"].'</td>
                   <td>'.$value["precio_costo"].'</td>
-                  <td>'.$value["precio_venta"].'</td>
-                   <td>'.$value["existencia_producto"].'</td>
-                  <td>'.$value["id_pasillo"].'</td>
-                   <td>'.$value["status"].'</td>
-                   <td>'.$value["fecha_alta"].'</td>
+                  <td>'.$value["precio_venta"].'</td>';                                  
+            if($value["existencia_producto"]<=10){
+            echo '
+                 <div>
+                 <td>
+                 <button class="btn btn-danger btn-sm">'.$value["existencia_producto"].'</button>
+                 </td>
+                 </div>
+                 ';}
+                 else{
+                 if($value["existencia_producto"]>=20){
+                  echo '
+                  <div>
+                  <td>
+                  <button class="btn btn-success btn-sm">'.$value["existencia_producto"].'</button>
+                  </td>
+                  </div>
+                  ';
+                 } else {
+                   if($value["existencia_producto"]>=10 && $value["existencia_producto"]<20){
+                    echo '
+                    <div>
+                    <td>
+                    <button class="btn btn-warning btn-sm">'.$value["existencia_producto"].'</button>
+                    </td>
+                    </div>
+                    ';
+                   }
+                 }   
+                }            
+               echo ' <td>'.$value["id_pasillo"].'</td>';
+               if($value['status']==0){
+               echo '
+               <div>
+               <td>
+               <button class="btn btn-danger btn-sm">Inactivo</button>
+               </td>
+               </div>
+               ';}
+               else {
+                 if($value['status']==1){
+                  echo '
+                  <div>
+                  <td>
+                  <button class="btn btn-success btn-sm">activo</button>
+                  </td>
+                  </div>
+                  ';
+                 }
+               }
+               
+               $fechaAlta=date_create($value['fecha_alta']);
+               $newFecha=date_format($fechaAlta,'d/m/Y');
+                   echo' 
+                   <td>'.$newFecha.'</td>';
+
+                   echo '
                   <td>'.$value["descripcion"].'</td> 
                   <td>'.$value["numero_ventas"].'</td>'; 
                   echo '
@@ -61,24 +128,33 @@ include("conexion.php");
                     <div class="btn-group">                        
                       <button class="btn btn-warning btnEditarProducto" data-toggle="modal" data-target="#modalEditarProducto">
                       <i class="fa fa-pencil"></i></button>
-                      <button class="btn btn-danger btnEliminarProducto" 
-                      idProducto="'.$value["id_producto"].'"  nombre="'.$value["nombre"].'"><i class="fa fa-times"></i></button>
+                      <button class="btn btn-danger btnEliminarProducto"><i class="fa fa-times"></i></button>
                     </div>  
                   </td>
                 </tr>';
-        }
-        ?> 
+        }}
+        ?>  
         </tbody>
        </table>
       </div>
     </div>
+    <blockquote class="blockquote-reverse">
+    <p class="text-right small">
+    <strong>
+    <?php
+    echo 'Número de total de productos: '; 
+    ?>
+    </strong>
+    <?php
+    echo $fila['existencia_producto'];
+    ?>
+    </p>
+    </blockquote>
   </section>
-</div>
-
 <div id="modalAgregarProducto" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
-           <form role="form" method="post" enctype="">
+           <form method="POST" enctype="" action="../Principal/menuAdministrador.php?p=contenedorProductos">
            <div class="modal-header" style="background:#3c8dbc; color:white">
            <button type="button" class="close" data-dismiss="modal">&times;</button>
            <h3>Agregar productos</h3>
@@ -131,10 +207,10 @@ include("conexion.php");
                <div class="form-group">
                <div class="input-group">
                <span class="input-group-addon"><i class="fa fa-users"></i></span> 
-                <select class="form-control form-control-sm" name="nuevoPerfil">
+                <select class="form-control form-control-sm" name="nuevoEstatus">
                   <option value="">Selecionar estatus</option>
-                  <option value="Administrador">Activo</option>                  
-                  <option value="Vendedor">Inactivo</option>
+                  <option value="1">Activo</option>                  
+                  <option value="0">Inactivo</option>
                 </select> 
               </div>
                </div>
@@ -155,6 +231,31 @@ include("conexion.php");
         </div>
     </div>
 </div>
+<?php
+if(isset($_POST['guardar'])){
+$codigoB=$_POST['nuevoCodigo'];
+$nombreP=$_POST['nuevoNombre'];
+$precioC=$_POST['nuevoPrecioCosto'];
+$precioV=$_POST['nuevoPrecioVenta'];
+$stock=$_POST['nuevoStock'];
+$pasillo=$_POST['nuevoPasillo'];
+$estatus=$_POST['nuevoEstatus'];
+$hoy = date("y-m-d H:m:s"); 
+$descripcion=$_POST['nuevaDescripcion'];
+$insertar="INSERT INTO producto (codigo_barras, nombre, precio_costo,
+precio_venta,existencia_producto,id_pasillo, id_producto_carrito,status,
+fecha_alta,fecha_devolucion,descripcion,numero_ventas) VALUES
+('$codigoB', '$nombreP', '$precioC', '$precioV', '$stock',$pasillo, 
+NULL,$estatus,'$hoy', NULL,'$descripcion', NULL)";
+$ejecutar=mysqli_query($conexion,$insertar);
+if($ejecutar){
+  echo '<p class="alert alert-success agileits" role="alert">Captura realizada correctamente!</p>';
+  //header('Refresh: 1');
+}else{
+  echo "<script>alert('Error al guardar')</script>";
+}
+}
+?>
 
 <!--=====================================
 MODAL EDITAR USUARIO
@@ -256,3 +357,25 @@ MODAL EDITAR USUARIO
 </div>
 </div>
 </div>
+<?php
+if(isset($_GET['borrar'])){
+$borrar_id==$_GET['borrar'];
+$borrar="DELETE FROM producto WHERE id_producto='$borrar_id' ";
+$ejecutar=mysqli_query($conexion,$borrar);
+if($ejecutar){
+echo "<script>alert('El producto ha sido borrado')</script>";
+echo "<script>window.open('../Principal/menuAdministrador.php?p=contenedorProductos','_self')</script>";
+}
+}
+?>
+<!--Entrada de codigo para hacer funcionar el filtro-->
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
